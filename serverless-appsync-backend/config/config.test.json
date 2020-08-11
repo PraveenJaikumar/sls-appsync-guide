@@ -1,0 +1,15 @@
+{
+  "default": {
+    "timeout": 120
+  },
+  "account": {
+    "id": "091954307339"
+  },
+  "db": {
+    "table": {
+      "note": {
+        "name": "${self:custom.base}-dyanomodbdatasource"
+      }
+    }
+  }
+}

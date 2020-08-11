@@ -1,0 +1,16 @@
+{
+  "version": "2017-02-28",
+  "operation": "PutItem",
+  "key": {
+    "schemeId": $util.dynamodb.toDynamoDBJson($ctx.args.input.schemeId),
+    "fileMappingId": $util.dynamodb.toDynamoDBJson($ctx.args.input.fileMappingId),
+  },
+  "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.input),
+  "condition": {
+    "expression": "attribute_not_exists(#schemeId) AND attribute_not_exists(#fileMappingId)",
+    "expressionNames": {
+      "#schemeId": "schemeId",
+      "#fileMappingId": "fileMappingId",
+    },
+  },
+}

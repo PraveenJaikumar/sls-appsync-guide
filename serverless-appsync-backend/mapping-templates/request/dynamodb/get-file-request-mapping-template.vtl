@@ -1,0 +1,8 @@
+{
+  "version": "2017-02-28",
+  "operation": "GetItem",
+  "key": {
+    "schemeId": $util.dynamodb.toDynamoDBJson($ctx.args.schemeId),
+    "fileMappingId": $util.dynamodb.toDynamoDBJson($ctx.args.fileMappingId),
+  },
+}
