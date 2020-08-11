@@ -1,6 +1,6 @@
 import {v4 as uuid} from 'uuid';
 import AWS from 'aws-sdk';
-async function getFileMapDetail1(event, context) {
+async function getFileMapDetails(event, context) {
   const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
   const {title} = JSON.parse(event.body);
@@ -22,6 +22,6 @@ async function getFileMapDetail1(event, context) {
   };
 }
 
-export const handler = getFileMapDetail1;
+export const handler = getFileMapDetails;
 
 

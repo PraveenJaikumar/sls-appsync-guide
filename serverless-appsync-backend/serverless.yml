@@ -10,29 +10,27 @@ plugins:
 provider:
   name: aws
   runtime: nodejs12.x
-  profile: pers_admin
-  region: us-west-2
+  profile: lg_sandbox # optoinal profile shold be listed in ~/.aws/credentials
+  region: us-west-2 # optoinal
   timeout: 120
   stage: ${opt:stage, "test"}
 
+#define lambda functions here which are to be created
 functions:
-  getFileMapDetail1:
+  getFileMapDetails:
     handler: src/handlers/getFileMapDetails.handler
-    arn: !GetAtt getFileMapDetail1.Arn
+
 custom:
+  #define service/function name and other details
   base: ${self:service}-${self:provider.stage}
   account: ${file(./config/config.${self:provider.stage}.json):account}
   db: ${file(./config/config.test.json):db}
   cognitoStackName: ${self:custom.base}-cognito
   dynamoDBStackName: ${self:custom.base}-dynamodb
+  lambdaStackName: ${self:custom.base}-lambda
 
   userPoolId:
     Fn::ImportValue: ${self:custom.cognitoStackName}:${self:provider.stage}:${self:custom.base}-UserPoolId
-  # lambdaArn:
-  #   arn:
-  #       Fn::GetAtt:
-  #         - AppSyncLoggingServiceRole
-  #         - Arn
 
   role:
     arn: arn:aws:iam::${self:custom.account.id}:role
@@ -56,6 +54,7 @@ custom:
           - AppSyncLoggingServiceRole
           - Arn
 
+# optoinal below ones are created before the stacks are created
   additionalStacks:
     cognitoResources:
       Deploy: Before
@@ -67,17 +66,19 @@ custom:
       StackName: ${self:custom.dynamoDBStackName}
       Resources: ${file(./resources/dynamodb.yml)}
 
+# appsync function details
   appSync:
     name: ${self:service}-${self:provider.stage}-api
     authenticationType: AWS_IAM
     logConfig:
       loggingRoleArn: ${self:custom.role.logging.arn}
       level: ALL
+    # appsync mapping details(mutation and query resolvers template added in respective path)
     mappingTemplates:
       - dataSource: realtimedata
         type: Mutation
         field: refreshProgressBar
-        request: "request/dynamodb/create-item-request-mapping-template.vtl"
+        request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
         response: "response/generic-response-mapping-template.vtl"
       - dataSource: dyanomodbdatasource
         type: Mutation
@@ -97,7 +98,7 @@ custom:
       - dataSource: getFileMapDetails
         type: Query
         field: getFileMapDetails
-        request: "request/dynamodb/get-item-request-mapping-template.vtl"
+        request: "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl"
         response: "response/generic-response-mapping-template.vtl"
       - dataSource: dyanomodbdatasource
         type: Query
@@ -114,7 +115,7 @@ custom:
         field: queryFilemappingmastersBySchemeIdNameIndex
         request: "request/dynamodb/list-items-request-mapping-template.vtl"
         response: "response/list-items-response-mapping-template.vtl"
-      
+    # appsync dataSources types and other details
     mappingTemplatesLocation: "mapping-templates"
     serviceRole: AppSyncServiceRole
     dataSources:
@@ -131,9 +132,9 @@ custom:
         name: getFileMapDetails
         description: 'Lambda DataSource'
         config: # Either of functionName or lambdaFunctionArn must tbe provided. When both are present, lambdaFunctionArn is used.
-          functionName: getFileMapDetail1
-          lambdaFunctionArn: ${self:functions:getFileMapDetail1:arn}
-          serviceRoleArn: { Fn::GetAtt: [AppSyncLambdaServiceRole, Arn] }
+          functionName: getFileMapDetails
+          lambdaFunctionArn: { Fn::GetAtt: [GetFileMapDetailsLambdaFunction, Arn] }
+          # <functionName with capital firstletter>LambdaFunction
           
 
 resources:
