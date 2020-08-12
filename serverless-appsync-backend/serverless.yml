@@ -1,5 +1,5 @@
 service:
-  name: sls-appsync-backend-pj
+  name: sls-appsync-bckend-pj
 
 plugins:
   - serverless-appsync-plugin
@@ -9,16 +9,42 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: java8
   profile: lg_sandbox # optoinal profile shold be listed in ~/.aws/credentials
-  region: us-west-2 # optoinal
+  region: ${opt:region, 'us-west-2'} # optoinal
   timeout: 120
   stage: ${opt:stage, "test"}
+  # iamRoleStatements:
+  #   - ${file(sls/iam/DynamoDBIAM.yml):productsDynamoDBTableIAM}
+  iamRoleStatements:
+    - ${file(sls/iam/DynamoDBIAM.yml):ProductsDynamoDBTableIAM}
 
 #define lambda functions here which are to be created
 functions:
-  getFileMapDetails:
-    handler: src/handlers/getFileMapDetails.handler
+  listProducts:
+    handler: com.serverless.ListProductsHandler
+    events:
+      - http:
+          path: /products
+          method: get
+  getProduct:
+    handler: com.serverless.GetProductHandler
+    events:
+      - http:
+          path: /products/{id}
+          method: get
+  createProduct:
+    handler: com.serverless.CreateProductHandler
+    events:
+      - http:
+          path: /products
+          method: post
+  deleteProduct:
+    handler: com.serverless.DeleteProductHandler
+    events:
+      - http:
+          path: /products/{id}
+          method: delete
 
 custom:
   #define service/function name and other details
@@ -28,6 +54,8 @@ custom:
   cognitoStackName: ${self:custom.base}-cognito
   dynamoDBStackName: ${self:custom.base}-dynamodb
   lambdaStackName: ${self:custom.base}-lambda
+  productsDynamoDBStackName: ${self:custom.base}-ProductsDynamoDBTable
+  productsTableName: 'java-products-${self:provider.stage}'
 
   userPoolId:
     Fn::ImportValue: ${self:custom.cognitoStackName}:${self:provider.stage}:${self:custom.base}-UserPoolId
@@ -132,13 +160,14 @@ custom:
         name: getFileMapDetails
         description: 'Lambda DataSource'
         config: # Either of functionName or lambdaFunctionArn must tbe provided. When both are present, lambdaFunctionArn is used.
-          functionName: getFileMapDetails
-          lambdaFunctionArn: { Fn::GetAtt: [GetFileMapDetailsLambdaFunction, Arn] }
+          functionName: listProducts
+          lambdaFunctionArn: { Fn::GetAtt: [ListProductsLambdaFunction, Arn] }
           # <functionName with capital firstletter>LambdaFunction
           
 
 resources:
   Resources:
+    ProductsDynamoDBTable: ${file(sls/resources/DynamoDB.yml):ProductsDynamoDBTable}
     AppSyncLoggingServiceRole:
       Type: "AWS::IAM::Role"
       Properties:
