@@ -1,5 +1,5 @@
 service:
-  name: sls-appsync-bckend-pj
+  name: sls-appsync-pj
 
 plugins:
   - serverless-appsync-plugin
@@ -16,9 +16,9 @@ provider:
   stage: ${opt:stage, "sandbox"}
 
 #define lambda functions here which are to be created
-functions:
-  listProducts:
-    handler: com.serverless.ListProductsHandler
+# functions:
+#   listProducts:
+#     handler: com.serverless.ListProductsHandler
   #   events:
   #     - http:
   #         path: /products
@@ -26,12 +26,14 @@ functions:
 
 custom:
   #define service/function name and other details
-  base: ${self:service}-${self:provider.stage}
+  base: ${self:service}-${self:provider.region}-${self:provider.stage}
   account: ${file(./config/config.${self:provider.stage}.json):account}
   lambdaStackName: ${self:custom.base}-lambda
+  
 
   role:
     arn: arn:aws:iam::${self:custom.account.id}:role
+    baseLambdaArn: arn:aws:lambda:${self:provider.region}:${self:custom.account.id}:function
     lambda:
       name: ${self:custom.base}-Lambda-AppSyncServiceRole
       arn: ${self:custom.role.arn}/${self:custom.role.lambda.name}
@@ -41,7 +43,6 @@ custom:
         Fn::GetAtt:
           - AppSyncLoggingServiceRole
           - Arn
-
 
 # appsync function details
   appSync: ${file(./resources/Appsync.yml):appSync}

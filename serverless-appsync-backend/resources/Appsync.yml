@@ -1,5 +1,5 @@
 appSync:
-    name: ${self:service}-${self:provider.stage}-api
+    name: ${self:custom.base}-api
     authenticationType: AWS_IAM
     logConfig:
       loggingRoleArn: ${self:custom.role.logging.arn}
@@ -11,11 +11,6 @@ appSync:
         field: refreshProgressBar
         request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
         response: "response/generic-response-mapping-template.vtl"
-      # - dataSource: dyanomodbdatasource
-      #   type: Mutation
-      #   field: createFilemappingmaster
-      #   request: "request/dynamodb/delete-item-request-mapping-template.vtl"
-      #   response: "response/generic-response-mapping-template.vtl"
       - dataSource: getFileMapDetails
         type: Query
         field: getFileMapDetails
@@ -26,19 +21,12 @@ appSync:
     mappingTemplatesLocation: "mapping-templates"
     serviceRole: AppSyncServiceRole
     dataSources:
-      # - type: AMAZON_DYNAMODB
-      #   name: dyanomodbdatasource
-      #   description: 'dyanomodbdatasource table'
-      #   config:
-      #     tableName: ${self:custom.db.table.note.name}
-      #     serviceRoleArn: ${self:custom.role.dynamodb.arn}
-      - type: NONE
+      - type: NONE  #0
         name: realtimedata
         description: 'realtimedata'
-      - type: AWS_LAMBDA
+      - type: AWS_LAMBDA #1
         name: getFileMapDetails
         description: 'Lambda DataSource'
-        config: # Either of functionName or lambdaFunctionArn must tbe provided. When both are present, lambdaFunctionArn is used.
-          functionName: listProducts
-          lambdaFunctionArn: { Fn::GetAtt: [ListProductsLambdaFunction, Arn] }
-          # <functionName with capital firstletter>LambdaFunction
+        config: # increase the array number in lambdaFunctionArn to get arn of below functionName 
+          functionName: 'Products-api-test-deleteProduct'
+          lambdaFunctionArn: '${self:custom.role.baseLambdaArn}:${self:custom.appSync.dataSources.1.config.functionName}'

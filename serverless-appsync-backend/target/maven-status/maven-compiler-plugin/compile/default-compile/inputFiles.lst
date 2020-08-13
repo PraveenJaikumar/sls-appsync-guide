@@ -1,8 +1,0 @@
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/Response.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/DeleteProductHandler.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/dal/Product.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/dal/DynamoDBAdapter.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/ListProductsHandler.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/GetProductHandler.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/CreateProductHandler.java
-/Users/praveenjai/Documents/work/study/aws_serverless/serverless/sls-appsync-guide/serverless-appsync-backend/src/main/java/com/serverless/ApiGatewayResponse.java

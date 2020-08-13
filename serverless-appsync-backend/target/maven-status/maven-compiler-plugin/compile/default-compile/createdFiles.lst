@@ -1,9 +1,0 @@
-com/serverless/GetProductHandler.class
-com/serverless/CreateProductHandler.class
-com/serverless/dal/DynamoDBAdapter.class
-com/serverless/ApiGatewayResponse$Builder.class
-com/serverless/dal/Product.class
-com/serverless/DeleteProductHandler.class
-com/serverless/Response.class
-com/serverless/ListProductsHandler.class
-com/serverless/ApiGatewayResponse.class
