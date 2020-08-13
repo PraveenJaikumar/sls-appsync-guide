@@ -1,2 +1,0 @@
-getFileMapDetails:
-  handler: ./../src/handlers/getFileMapDetails.handler

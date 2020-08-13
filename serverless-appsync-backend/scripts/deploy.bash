@@ -6,7 +6,7 @@ stage=$1
 
 if [[ -z $stage ]];
 then
-    stage="test"
+    stage="sandbox"
 fi
 
 echo "**** Deploying to $stage ****"

@@ -1,0 +1,44 @@
+appSync:
+    name: ${self:service}-${self:provider.stage}-api
+    authenticationType: AWS_IAM
+    logConfig:
+      loggingRoleArn: ${self:custom.role.logging.arn}
+      level: ALL
+    # appsync mapping details(mutation and query resolvers template added in respective path)
+    mappingTemplates:
+      - dataSource: realtimedata
+        type: Mutation
+        field: refreshProgressBar
+        request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
+        response: "response/generic-response-mapping-template.vtl"
+      # - dataSource: dyanomodbdatasource
+      #   type: Mutation
+      #   field: createFilemappingmaster
+      #   request: "request/dynamodb/delete-item-request-mapping-template.vtl"
+      #   response: "response/generic-response-mapping-template.vtl"
+      - dataSource: getFileMapDetails
+        type: Query
+        field: getFileMapDetails
+        request: "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl"
+        response: "response/generic-response-mapping-template.vtl"
+
+    # appsync dataSources types and other details
+    mappingTemplatesLocation: "mapping-templates"
+    serviceRole: AppSyncServiceRole
+    dataSources:
+      # - type: AMAZON_DYNAMODB
+      #   name: dyanomodbdatasource
+      #   description: 'dyanomodbdatasource table'
+      #   config:
+      #     tableName: ${self:custom.db.table.note.name}
+      #     serviceRoleArn: ${self:custom.role.dynamodb.arn}
+      - type: NONE
+        name: realtimedata
+        description: 'realtimedata'
+      - type: AWS_LAMBDA
+        name: getFileMapDetails
+        description: 'Lambda DataSource'
+        config: # Either of functionName or lambdaFunctionArn must tbe provided. When both are present, lambdaFunctionArn is used.
+          functionName: listProducts
+          lambdaFunctionArn: { Fn::GetAtt: [ListProductsLambdaFunction, Arn] }
+          # <functionName with capital firstletter>LambdaFunction

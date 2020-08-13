@@ -13,65 +13,25 @@ provider:
   profile: lg_sandbox # optoinal profile shold be listed in ~/.aws/credentials
   region: ${opt:region, 'us-west-2'} # optoinal
   timeout: 120
-  stage: ${opt:stage, "test"}
-  # iamRoleStatements:
-  #   - ${file(sls/iam/DynamoDBIAM.yml):productsDynamoDBTableIAM}
-  iamRoleStatements:
-    - ${file(sls/iam/DynamoDBIAM.yml):ProductsDynamoDBTableIAM}
+  stage: ${opt:stage, "sandbox"}
 
 #define lambda functions here which are to be created
 functions:
   listProducts:
     handler: com.serverless.ListProductsHandler
-    events:
-      - http:
-          path: /products
-          method: get
-  getProduct:
-    handler: com.serverless.GetProductHandler
-    events:
-      - http:
-          path: /products/{id}
-          method: get
-  createProduct:
-    handler: com.serverless.CreateProductHandler
-    events:
-      - http:
-          path: /products
-          method: post
-  deleteProduct:
-    handler: com.serverless.DeleteProductHandler
-    events:
-      - http:
-          path: /products/{id}
-          method: delete
+  #   events:
+  #     - http:
+  #         path: /products
+  #         method: get
 
 custom:
   #define service/function name and other details
   base: ${self:service}-${self:provider.stage}
   account: ${file(./config/config.${self:provider.stage}.json):account}
-  db: ${file(./config/config.test.json):db}
-  cognitoStackName: ${self:custom.base}-cognito
-  dynamoDBStackName: ${self:custom.base}-dynamodb
   lambdaStackName: ${self:custom.base}-lambda
-  productsDynamoDBStackName: ${self:custom.base}-ProductsDynamoDBTable
-  productsTableName: 'java-products-${self:provider.stage}'
-
-  userPoolId:
-    Fn::ImportValue: ${self:custom.cognitoStackName}:${self:provider.stage}:${self:custom.base}-UserPoolId
 
   role:
     arn: arn:aws:iam::${self:custom.account.id}:role
-    cognito:
-      auth:
-        name: ${self:custom.base}-auth-CognitoRole
-        arn: ${self:custom.role.arn}/${self:custom.role.cognito.auth.name}
-      unAuth:
-        name: ${self:custom.base}-unAuth-CognitoRole
-        arn: ${self:custom.role.arn}/${self:custom.role.cognito.unAuth.name}
-    dynamodb:
-      name: ${self:custom.base}-DynamoDB-AppSyncServiceRole
-      arn: ${self:custom.role.arn}/${self:custom.role.dynamodb.name}
     lambda:
       name: ${self:custom.base}-Lambda-AppSyncServiceRole
       arn: ${self:custom.role.arn}/${self:custom.role.lambda.name}
@@ -82,113 +42,11 @@ custom:
           - AppSyncLoggingServiceRole
           - Arn
 
-# optoinal below ones are created before the stacks are created
-  additionalStacks:
-    cognitoResources:
-      Deploy: Before
-      StackName: ${self:custom.cognitoStackName}
-      Resources: ${file(./resources/cognito.yml)}
-      Outputs: ${file(./resources/cognito-outputs.yml)}
-    dynamoDBResources:
-      Deploy: Before
-      StackName: ${self:custom.dynamoDBStackName}
-      Resources: ${file(./resources/dynamodb.yml)}
 
 # appsync function details
-  appSync:
-    name: ${self:service}-${self:provider.stage}-api
-    authenticationType: AWS_IAM
-    logConfig:
-      loggingRoleArn: ${self:custom.role.logging.arn}
-      level: ALL
-    # appsync mapping details(mutation and query resolvers template added in respective path)
-    mappingTemplates:
-      - dataSource: realtimedata
-        type: Mutation
-        field: refreshProgressBar
-        request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Mutation
-        field: createFilemappingmaster
-        request: "request/dynamodb/delete-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Mutation
-        field: updateFilemappingmaster
-        request: "request/dynamodb/update-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Mutation
-        field: updateFilemappingmaster
-        request: "request/dynamodb/update-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: getFileMapDetails
-        type: Query
-        field: getFileMapDetails
-        request: "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Query
-        field: getFilemappingmaster
-        request: "request/dynamodb/list-items-request-mapping-template.vtl"
-        response: "response/list-items-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Query
-        field: listFilemappingmasters
-        request: "request/dynamodb/get-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: dyanomodbdatasource
-        type: Query
-        field: queryFilemappingmastersBySchemeIdNameIndex
-        request: "request/dynamodb/list-items-request-mapping-template.vtl"
-        response: "response/list-items-response-mapping-template.vtl"
-    # appsync dataSources types and other details
-    mappingTemplatesLocation: "mapping-templates"
-    serviceRole: AppSyncServiceRole
-    dataSources:
-      - type: AMAZON_DYNAMODB
-        name: dyanomodbdatasource
-        description: 'dyanomodbdatasource table'
-        config:
-          tableName: ${self:custom.db.table.note.name}
-          serviceRoleArn: ${self:custom.role.dynamodb.arn}
-      - type: NONE
-        name: realtimedata
-        description: 'realtimedata'
-      - type: AWS_LAMBDA
-        name: getFileMapDetails
-        description: 'Lambda DataSource'
-        config: # Either of functionName or lambdaFunctionArn must tbe provided. When both are present, lambdaFunctionArn is used.
-          functionName: listProducts
-          lambdaFunctionArn: { Fn::GetAtt: [ListProductsLambdaFunction, Arn] }
-          # <functionName with capital firstletter>LambdaFunction
-          
+  appSync: ${file(./resources/Appsync.yml):appSync}
+        
 
 resources:
   Resources:
-    ProductsDynamoDBTable: ${file(sls/resources/DynamoDB.yml):ProductsDynamoDBTable}
-    AppSyncLoggingServiceRole:
-      Type: "AWS::IAM::Role"
-      Properties:
-        RoleName: ${self:custom.role.logging.name}
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Service:
-                  - "appsync.amazonaws.com"
-              Action:
-                - "sts:AssumeRole"
-        Policies:
-          - PolicyName: ${self:custom.role.logging.name}-Policy
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - logs:CreateLogGroup
-                    - logs:CreateLogStream
-                    - logs:PutLogEvents
-                  Resource: "*"
+    AppSyncLoggingServiceRole:  ${file(./resources/AppSyncLoggingServiceRole.yml):AppSyncLoggingServiceRole}

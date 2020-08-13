@@ -3,31 +3,6 @@ type Schema {
   mutation: Mutation
 }
 
-
-input CreateFilemappingmasterInput {
-	fileMappingId: Int!
-	schemeId: String!
-	name: String
-}
-
-input DeleteFilemappingmasterInput {
-	fileMappingId: Int!
-	schemeId: String!
-}
-
-type FieldMap {
-	columnNumber: Int
-	fieldId: String!
-	valueMaps: [ValueMap]
-}
-
-type FieldMaster {
-	fieldId: String
-	description: String
-	submissionType: String
-	shortDescription: String
-}
-
 type FileMap {
 	fileMapId: Int!
 	name: String
@@ -36,25 +11,13 @@ type FileMap {
 	billingGroupId: String
 	active: String
 	dateFormat: String
-	fieldMaps: [FieldMap]
 	createdBy: String
 	createdDate: String
 	lastUpdatedBy: String
 	lastUpdatedDate: String
 	default: Boolean
-	fieldMasters: [FieldMaster]
 }
 
-type Filemappingmaster {
-	fileMappingId: Int!
-	schemeId: String!
-	name: String
-}
-
-type FilemappingmasterConnection {
-	items: [Filemappingmaster]
-	nextToken: String
-}
 
 type Mutation {
 	refreshProgressBar(
@@ -64,9 +27,6 @@ type Mutation {
 		validatedRecordCount: Int,
 		actionRecordCount: Int
 	): ProgressUpdate
-	createFilemappingmaster(input: CreateFilemappingmasterInput!): Filemappingmaster
-	updateFilemappingmaster(input: UpdateFilemappingmasterInput!): Filemappingmaster
-	deleteFilemappingmaster(input: DeleteFilemappingmasterInput!): Filemappingmaster
 }
 
 type ProgressUpdate {
@@ -82,91 +42,11 @@ type ProgressUpdate {
 
 type Query {
 	getFileMapDetails(fileMapId: Int): FileMap
-	getFilemappingmaster(schemeId: String!, fileMappingId: Int!): Filemappingmaster
-	listFilemappingmasters(filter: TableFilemappingmasterFilterInput, limit: Int, nextToken: String): FilemappingmasterConnection
-	queryFilemappingmastersBySchemeIdNameIndex(schemeId: String!, first: Int, after: String): FilemappingmasterConnection
 }
 
 type Subscription {
 	refreshProgressBar(submissionId: String!): ProgressUpdate
 		@aws_subscribe(mutations: ["refreshProgressBar"])
-	onCreateFilemappingmaster(fileMappingId: Int, schemeId: String, name: String): Filemappingmaster
-		@aws_subscribe(mutations: ["createFilemappingmaster"])
-	onUpdateFilemappingmaster(fileMappingId: Int, schemeId: String, name: String): Filemappingmaster
-		@aws_subscribe(mutations: ["updateFilemappingmaster"])
-	onDeleteFilemappingmaster(fileMappingId: Int, schemeId: String, name: String): Filemappingmaster
-		@aws_subscribe(mutations: ["deleteFilemappingmaster"])
-}
-
-input TableBooleanFilterInput {
-	ne: Boolean
-	eq: Boolean
-}
-
-input TableFilemappingmasterFilterInput {
-	fileMappingId: TableIntFilterInput
-	schemeId: TableStringFilterInput
-	name: TableStringFilterInput
-}
-
-input TableFloatFilterInput {
-	ne: Float
-	eq: Float
-	le: Float
-	lt: Float
-	ge: Float
-	gt: Float
-	contains: Float
-	notContains: Float
-	between: [Float]
-}
-
-input TableIDFilterInput {
-	ne: ID
-	eq: ID
-	le: ID
-	lt: ID
-	ge: ID
-	gt: ID
-	contains: ID
-	notContains: ID
-	between: [ID]
-	beginsWith: ID
-}
-
-input TableIntFilterInput {
-	ne: Int
-	eq: Int
-	le: Int
-	lt: Int
-	ge: Int
-	gt: Int
-	contains: Int
-	notContains: Int
-	between: [Int]
-}
-
-input TableStringFilterInput {
-	ne: String
-	eq: String
-	le: String
-	lt: String
-	ge: String
-	gt: String
-	contains: String
-	notContains: String
-	between: [String]
-	beginsWith: String
-}
-
-input TaskFilterInput {
-	submissionId: TableStringFilterInput
-}
-
-input UpdateFilemappingmasterInput {
-	fileMappingId: Int!
-	schemeId: String!
-	name: String
 }
 
 type ValueMap {
