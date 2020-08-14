@@ -7,11 +7,11 @@ appSync:
     # appsync mapping details(mutation and query resolvers template added in respective path)
     mappingTemplates:
         ##################Mutation###########
-      - dataSource: ${self:custom.AppsyncFunction.query.resolver1.dataSource}
+      - dataSource: ${self:custom.AppsyncFunction.mutation.resolver1.dataSource}
         type: Mutation
-        field: ${self:custom.AppsyncFunction.query.resolver1.field}
-        request: "${self:custom.AppsyncFunction.query.resolver1.request}"
-        response: "${self:custom.AppsyncFunction.query.resolver1.response}"
+        field: ${self:custom.AppsyncFunction.mutation.resolver1.field}
+        request: "${self:custom.AppsyncFunction.mutation.resolver1.request}"
+        response: "${self:custom.AppsyncFunction.mutation.resolver1.response}"
         ##################Query###########
       - dataSource: ${self:custom.AppsyncFunction.query.resolver1.dataSource}
         type: Query

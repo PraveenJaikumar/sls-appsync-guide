@@ -37,10 +37,10 @@ custom:
         fullName: 'realtimedata'
         type: NONE
         desc: 'realtimedata'
-        request: "request/getFileMapDetails/refreshProgressBar-item-request-mapping-template.vtl"
+        request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
         response: "response/generic-response-mapping-template.vtl"         
     query:
-      resolver1:
+      resolver1:      
         dataSource: 'GETFILEMAP'
         field: getFileMapDetails
         fullName: 'getFileMapDetails'

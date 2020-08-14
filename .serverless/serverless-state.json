@@ -151,7 +151,7 @@
           "GraphQlSchema": {
             "Type": "AWS::AppSync::GraphQLSchema",
             "Properties": {
-              "Definition": "type Schema {\n  query: Query\n  mutation: Mutation\n}\n\ntype FileMap {\n\tfileMapId: Int!\n\tname: String\n\tsubmissionType: String\n\tschemeId: String\n\tbillingGroupId: String\n\tactive: String\n\tdateFormat: String\n\tcreatedBy: String\n\tcreatedDate: String\n\tlastUpdatedBy: String\n\tlastUpdatedDate: String\n\tdefault: Boolean\n}\n\n\ntype Mutation {\n\tgetFileMapDetails(\n\t\tsubmissionId: String!,\n\t\ttotalRecordCount: Int,\n\t\tloadedRecordCount: Int,\n\t\tvalidatedRecordCount: Int,\n\t\tactionRecordCount: Int\n\t): ProgressUpdate\n}\n\ntype ProgressUpdate {\n\tsubmissionId: String!\n\tprocessingState: String\n\tbusinessFailureCode: String\n\tbusinessFailureReason: String\n\ttotalRecordCount: Int\n\tloadedRecordCount: Int\n\tvalidatedRecordCount: Int\n\tactionRecordCount: Int\n}\n\ntype Query {\n\tgetFileMapDetails(fileMapId: Int): FileMap\n}\n\ntype Subscription {\n\tgetFileMapDetails(submissionId: String!): ProgressUpdate\n\t\t@aws_subscribe(mutations: [\"refreshProgressBar\"])\n}\n\ntype ValueMap {\n\tinternalValue: String\n\texternalValue: String\n}",
+              "Definition": "type Schema {\n  query: Query\n  mutation: Mutation\n}\n\ntype FileMap {\n\tfileMapId: Int!\n\tname: String\n\tsubmissionType: String\n\tschemeId: String\n\tbillingGroupId: String\n\tactive: String\n\tdateFormat: String\n\tcreatedBy: String\n\tcreatedDate: String\n\tlastUpdatedBy: String\n\tlastUpdatedDate: String\n\tdefault: Boolean\n}\n\n\ntype Mutation {\n\trefreshProgressBar(\n\t\tsubmissionId: String!,\n\t\ttotalRecordCount: Int,\n\t\tloadedRecordCount: Int,\n\t\tvalidatedRecordCount: Int,\n\t\tactionRecordCount: Int\n\t): ProgressUpdate\n}\n\ntype ProgressUpdate {\n\tsubmissionId: String!\n\tprocessingState: String\n\tbusinessFailureCode: String\n\tbusinessFailureReason: String\n\ttotalRecordCount: Int\n\tloadedRecordCount: Int\n\tvalidatedRecordCount: Int\n\tactionRecordCount: Int\n}\n\ntype Query {\n\tgetFileMapDetails(fileMapId: Int): FileMap\n}\n\ntype Subscription {\n\trefreshProgressBar(submissionId: String!): ProgressUpdate\n\t\t@aws_subscribe(mutations: [\"refreshProgressBar\"])\n}\n\ntype ValueMap {\n\tinternalValue: String\n\texternalValue: String\n}",
               "ApiId": {
                 "Fn::GetAtt": [
                   "GraphQlApi",
@@ -246,7 +246,7 @@
               }
             }
           },
-          "GraphQlResolverMutationgetFileMapDetails": {
+          "GraphQlResolverMutationrefreshProgressBar": {
             "Type": "AWS::AppSync::Resolver",
             "DependsOn": "GraphQlSchema",
             "Properties": {
@@ -257,12 +257,12 @@
                 ]
               },
               "TypeName": "Mutation",
-              "FieldName": "getFileMapDetails",
-              "RequestMappingTemplate": "#**\nThe value of 'payload' after the template has been evaluated\nwill be passed as the event to AWS Lambda.\n*#\n{\n  \"version\" : \"2017-02-28\",\n  \"operation\": \"Invoke\",\n  \"payload\": $util.toJson($context.args)\n}",
+              "FieldName": "refreshProgressBar",
+              "RequestMappingTemplate": "#**\n    Resolvers with None data sources can locally publish events\n    that fire subscriptions without hitting a backend data source.\n    The value of 'payload' after the template has been evaluated\n    will be directly forwarded to the response.\n*#\n{\n    \"version\": \"2017-02-28\",\n     \"payload\": $util.toJson($context.args)\n}",
               "ResponseMappingTemplate": "$util.toJson($ctx.result)\n",
               "DataSourceName": {
                 "Fn::GetAtt": [
-                  "GraphQlDsGETFILEMAP",
+                  "GraphQlDsrealtimedata",
                   "Name"
                 ]
               }
@@ -389,7 +389,7 @@
             "fullName": "realtimedata",
             "type": "NONE",
             "desc": "realtimedata",
-            "request": "request/getFileMapDetails/refreshProgressBar-item-request-mapping-template.vtl",
+            "request": "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl",
             "response": "response/generic-response-mapping-template.vtl"
           }
         },
@@ -433,10 +433,10 @@
         },
         "mappingTemplates": [
           {
-            "dataSource": "GETFILEMAP",
+            "dataSource": "realtimedata",
             "type": "Mutation",
-            "field": "getFileMapDetails",
-            "request": "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl",
+            "field": "refreshProgressBar",
+            "request": "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl",
             "response": "response/generic-response-mapping-template.vtl"
           },
           {
@@ -544,7 +544,7 @@
         "$ref": "$[\"service\"][\"functions\"]"
       },
       "package": {
-        "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597414803186-2020-08-14T14:20:03.186Z"
+        "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597415894614-2020-08-14T14:38:14.614Z"
       },
       "layers": {
         "$ref": "$[\"service\"][\"layers\"]"
@@ -554,7 +554,7 @@
     "isDashboardMonitoringPreconfigured": false
   },
   "package": {
-    "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597414803186-2020-08-14T14:20:03.186Z",
+    "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597415894614-2020-08-14T14:38:14.614Z",
     "artifact": ""
   }
 }
