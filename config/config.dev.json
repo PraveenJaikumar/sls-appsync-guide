@@ -1,0 +1,15 @@
+{
+  "default": {
+    "timeout": 120
+  },
+  "account": {
+    "id": "repxdev"
+  },
+  "db": {
+    "table": {
+      "note": {
+        "name": "${self:custom.base}-dyanomodbdatasource"
+      }
+    }
+  }
+}
