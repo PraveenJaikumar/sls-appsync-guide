@@ -1,5 +1,5 @@
 service:
-  name: sls-appsync-pj
+  name: sls-appsync-pjs
 
 plugins:
   - serverless-appsync-plugin
@@ -29,6 +29,25 @@ custom:
   base: ${self:service}-${self:provider.region}-${self:provider.stage}
   account: ${file(./config/config.${self:provider.stage}.json):account}
   lambdaStackName: ${self:custom.base}-lambda
+  AppsyncFunction:
+    mutation:
+      resolver1:
+        dataSource: realtimedata
+        field: refreshProgressBar
+        fullName: 'realtimedata'
+        type: NONE
+        desc: 'realtimedata'
+        request: "request/getFileMapDetails/refreshProgressBar-item-request-mapping-template.vtl"
+        response: "response/generic-response-mapping-template.vtl"         
+    query:
+      resolver1:
+        dataSource: 'GETFILEMAP'
+        field: getFileMapDetails
+        fullName: 'getFileMapDetails'
+        type: AWS_LAMBDA
+        desc: 'getFileMapDetails lambda function'
+        request: "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl"
+        response: "response/generic-response-mapping-template.vtl"
   
 
   role:

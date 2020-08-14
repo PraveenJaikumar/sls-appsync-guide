@@ -6,27 +6,31 @@ appSync:
       level: ALL
     # appsync mapping details(mutation and query resolvers template added in respective path)
     mappingTemplates:
-      - dataSource: realtimedata
+        ##################Mutation###########
+      - dataSource: ${self:custom.AppsyncFunction.query.resolver1.dataSource}
         type: Mutation
-        field: refreshProgressBar
-        request: "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
-      - dataSource: getFileMapDetails
+        field: ${self:custom.AppsyncFunction.query.resolver1.field}
+        request: "${self:custom.AppsyncFunction.query.resolver1.request}"
+        response: "${self:custom.AppsyncFunction.query.resolver1.response}"
+        ##################Query###########
+      - dataSource: ${self:custom.AppsyncFunction.query.resolver1.dataSource}
         type: Query
-        field: getFileMapDetails
-        request: "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl"
-        response: "response/generic-response-mapping-template.vtl"
+        field: ${self:custom.AppsyncFunction.query.resolver1.field}
+        request: "${self:custom.AppsyncFunction.query.resolver1.request}"
+        response: "${self:custom.AppsyncFunction.query.resolver1.response}"
 
     # appsync dataSources types and other details
     mappingTemplatesLocation: "mapping-templates"
     serviceRole: AppSyncServiceRole
     dataSources:
-      - type: NONE  #0
-        name: realtimedata
-        description: 'realtimedata'
-      - type: AWS_LAMBDA #1
-        name: getFileMapDetails
-        description: 'Lambda DataSource'
+        ############## mutation  ##############
+      - type: ${self:custom.AppsyncFunction.mutation.resolver1.type} #1 
+        name: ${self:custom.AppsyncFunction.mutation.resolver1.dataSource}
+        description: ${self:custom.AppsyncFunction.mutation.resolver1.desc}
+        ####################   Query   ###########
+      - type: ${self:custom.AppsyncFunction.query.resolver1.type} #1 
+        name: ${self:custom.AppsyncFunction.query.resolver1.dataSource}
+        description: ${self:custom.AppsyncFunction.query.resolver1.desc}
         config: # increase the array number in lambdaFunctionArn to get arn of below functionName 
-          functionName: 'Products-api-test-deleteProduct'
-          lambdaFunctionArn: '${self:custom.role.baseLambdaArn}:${self:custom.appSync.dataSources.1.config.functionName}'
+          functionName: ${self:custom.AppsyncFunction.query.resolver1.fullName}
+          lambdaFunctionArn: '${self:custom.role.baseLambdaArn}:${self:custom.AppsyncFunction.query.resolver1.fullName}'

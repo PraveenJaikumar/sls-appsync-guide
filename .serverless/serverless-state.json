@@ -1,0 +1,449 @@
+{
+  "service": {
+    "service": "sls-appsync-pjs",
+    "serviceObject": {
+      "name": "sls-appsync-pjs"
+    },
+    "provider": {
+      "stage": "sandbox",
+      "region": "us-west-2",
+      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)*]+?)}",
+      "name": "aws",
+      "runtime": "java8",
+      "profile": "lg_sandbox",
+      "timeout": 120,
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "AppSyncLoggingServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "RoleName": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole",
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "appsync.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole-Policy",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogGroup",
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": "*"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "GraphQlApi": {
+            "Type": "AWS::AppSync::GraphQLApi",
+            "Properties": {
+              "Name": "sls-appsync-pjs-us-west-2-sandbox-api",
+              "AuthenticationType": "AWS_IAM",
+              "AdditionalAuthenticationProviders": [],
+              "LogConfig": {
+                "CloudWatchLogsRoleArn": {
+                  "Fn::GetAtt": [
+                    "AppSyncLoggingServiceRole",
+                    "Arn"
+                  ]
+                },
+                "FieldLogLevel": "ALL"
+              }
+            }
+          },
+          "GraphQlApiLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "/aws/appsync/apis",
+                    {
+                      "Fn::GetAtt": [
+                        "GraphQlApi",
+                        "ApiId"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "GraphQlSchema": {
+            "Type": "AWS::AppSync::GraphQLSchema",
+            "Properties": {
+              "Definition": "type Schema {\n  query: Query\n  mutation: Mutation\n}\n\ntype FileMap {\n\tfileMapId: Int!\n\tname: String\n\tsubmissionType: String\n\tschemeId: String\n\tbillingGroupId: String\n\tactive: String\n\tdateFormat: String\n\tcreatedBy: String\n\tcreatedDate: String\n\tlastUpdatedBy: String\n\tlastUpdatedDate: String\n\tdefault: Boolean\n}\n\n\ntype Mutation {\n\trefreshProgressBar(\n\t\tsubmissionId: String!,\n\t\ttotalRecordCount: Int,\n\t\tloadedRecordCount: Int,\n\t\tvalidatedRecordCount: Int,\n\t\tactionRecordCount: Int\n\t): ProgressUpdate\n}\n\ntype ProgressUpdate {\n\tsubmissionId: String!\n\tprocessingState: String\n\tbusinessFailureCode: String\n\tbusinessFailureReason: String\n\ttotalRecordCount: Int\n\tloadedRecordCount: Int\n\tvalidatedRecordCount: Int\n\tactionRecordCount: Int\n}\n\ntype Query {\n\tgetFileMapDetails(fileMapId: Int): FileMap\n}\n\ntype Subscription {\n\trefreshProgressBar(submissionId: String!): ProgressUpdate\n\t\t@aws_subscribe(mutations: [\"refreshProgressBar\"])\n}\n\ntype ValueMap {\n\tinternalValue: String\n\texternalValue: String\n}",
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              }
+            }
+          },
+          "GraphQlDsGETFILEMAPRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "appsync.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "GraphQlDsGETFILEMAPPolicy",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Action": [
+                          "lambda:invokeFunction"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": [
+                          "arn:aws:lambda:us-west-2:310643530327:function:getFileMapDetails",
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                "arn:aws:lambda:us-west-2:310643530327:function:getFileMapDetails",
+                                "*"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "GraphQlDsrealtimedata": {
+            "Type": "AWS::AppSync::DataSource",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "Name": "realtimedata",
+              "Description": "realtimedata",
+              "Type": "NONE"
+            }
+          },
+          "GraphQlDsGETFILEMAP": {
+            "Type": "AWS::AppSync::DataSource",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "Name": "GETFILEMAP",
+              "Description": "getFileMapDetails lambda function",
+              "Type": "AWS_LAMBDA",
+              "ServiceRoleArn": {
+                "Fn::GetAtt": [
+                  "GraphQlDsGETFILEMAPRole",
+                  "Arn"
+                ]
+              },
+              "LambdaConfig": {
+                "LambdaFunctionArn": "arn:aws:lambda:us-west-2:310643530327:function:getFileMapDetails"
+              }
+            }
+          },
+          "GraphQlResolverMutationrefreshProgressBar": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Mutation",
+              "FieldName": "refreshProgressBar",
+              "RequestMappingTemplate": "#**\n    Resolvers with None data sources can locally publish events\n    that fire subscriptions without hitting a backend data source.\n    The value of 'payload' after the template has been evaluated\n    will be directly forwarded to the response.\n*#\n{\n    \"version\": \"2017-02-28\",\n     \"payload\": $util.toJson($context.args)\n}",
+              "ResponseMappingTemplate": "$util.toJson($ctx.result)\n",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsrealtimedata",
+                  "Name"
+                ]
+              }
+            }
+          },
+          "GraphQlResolverQuerygetFileMapDetails": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Query",
+              "FieldName": "getFileMapDetails",
+              "RequestMappingTemplate": "#**\nThe value of 'payload' after the template has been evaluated\nwill be passed as the event to AWS Lambda.\n*#\n{\n  \"version\" : \"2017-02-28\",\n  \"operation\": \"Invoke\",\n  \"payload\": $util.toJson($context.args)\n}",
+              "ResponseMappingTemplate": "$util.toJson($ctx.result)\n",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsGETFILEMAP",
+                  "Name"
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "GraphQlApiUrl": {
+            "Value": {
+              "Fn::GetAtt": [
+                "GraphQlApi",
+                "GraphQLUrl"
+              ]
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "base": "sls-appsync-pjs-us-west-2-sandbox",
+      "account": {
+        "id": "310643530327"
+      },
+      "lambdaStackName": "sls-appsync-pjs-us-west-2-sandbox-lambda",
+      "AppsyncFunction": {
+        "mutation": {
+          "resolver1": {
+            "dataSource": "realtimedata",
+            "field": "refreshProgressBar",
+            "fullName": "realtimedata",
+            "type": "NONE",
+            "desc": "realtimedata",
+            "request": "request/getFileMapDetails/refreshProgressBar-item-request-mapping-template.vtl",
+            "response": "response/generic-response-mapping-template.vtl"
+          }
+        },
+        "query": {
+          "resolver1": {
+            "dataSource": "GETFILEMAP",
+            "field": "getFileMapDetails",
+            "fullName": "getFileMapDetails",
+            "type": "AWS_LAMBDA",
+            "desc": "getFileMapDetails lambda function",
+            "request": "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl",
+            "response": "response/generic-response-mapping-template.vtl"
+          }
+        }
+      },
+      "role": {
+        "arn": "arn:aws:iam::310643530327:role",
+        "baseLambdaArn": "arn:aws:lambda:us-west-2:310643530327:function",
+        "lambda": {
+          "name": "sls-appsync-pjs-us-west-2-sandbox-Lambda-AppSyncServiceRole",
+          "arn": "arn:aws:iam::310643530327:role/sls-appsync-pjs-us-west-2-sandbox-Lambda-AppSyncServiceRole"
+        },
+        "logging": {
+          "name": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole",
+          "arn": {
+            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GraphQlApi\"][\"Properties\"][\"LogConfig\"][\"CloudWatchLogsRoleArn\"]"
+          }
+        }
+      },
+      "appSync": {
+        "name": "sls-appsync-pjs-us-west-2-sandbox-api",
+        "authenticationType": "AWS_IAM",
+        "logConfig": {
+          "loggingRoleArn": {
+            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GraphQlApi\"][\"Properties\"][\"LogConfig\"][\"CloudWatchLogsRoleArn\"]"
+          },
+          "level": "ALL"
+        },
+        "mappingTemplates": [
+          {
+            "dataSource": "realtimedata",
+            "type": "Mutation",
+            "field": "refreshProgressBar",
+            "request": "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl",
+            "response": "response/generic-response-mapping-template.vtl"
+          },
+          {
+            "dataSource": "GETFILEMAP",
+            "type": "Query",
+            "field": "getFileMapDetails",
+            "request": "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl",
+            "response": "response/generic-response-mapping-template.vtl"
+          }
+        ],
+        "mappingTemplatesLocation": "mapping-templates",
+        "serviceRole": "AppSyncServiceRole",
+        "dataSources": [
+          {
+            "type": "NONE",
+            "name": "realtimedata",
+            "description": "realtimedata"
+          },
+          {
+            "type": "AWS_LAMBDA",
+            "name": "GETFILEMAP",
+            "description": "getFileMapDetails lambda function",
+            "config": {
+              "functionName": "getFileMapDetails",
+              "lambdaFunctionArn": "arn:aws:lambda:us-west-2:310643530327:function:getFileMapDetails"
+            }
+          }
+        ]
+      }
+    },
+    "plugins": [
+      "serverless-appsync-plugin",
+      "serverless-plugin-additional-stacks",
+      "serverless-iam-roles-per-function",
+      "serverless-plugin-include-dependencies"
+    ],
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "AppSyncLoggingServiceRole": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "RoleName": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole",
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "appsync.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole-Policy",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "serviceFilename": "serverless.yml",
+    "layers": {}
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597396308035-2020-08-14T09:11:48.035Z",
+    "artifact": ""
+  }
+}
