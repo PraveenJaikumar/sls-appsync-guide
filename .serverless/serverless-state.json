@@ -6,14 +6,13 @@
     },
     "provider": {
       "stage": "sandbox",
-      "region": "us-west-2",
-      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)*]+?)}",
+      "variableSyntax": "\\${([^{}]+?)}",
       "name": "aws",
       "runtime": "java8",
       "profile": "lg_sandbox",
+      "region": "us-west-2",
       "timeout": 120,
       "versionFunctions": true,
-      "remoteFunctionData": null,
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
         "Description": "The AWS CloudFormation template for this Serverless application",
@@ -26,6 +25,46 @@
                   {
                     "ServerSideEncryptionByDefault": {
                       "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
                     }
                   }
                 ]
@@ -112,7 +151,7 @@
           "GraphQlSchema": {
             "Type": "AWS::AppSync::GraphQLSchema",
             "Properties": {
-              "Definition": "type Schema {\n  query: Query\n  mutation: Mutation\n}\n\ntype FileMap {\n\tfileMapId: Int!\n\tname: String\n\tsubmissionType: String\n\tschemeId: String\n\tbillingGroupId: String\n\tactive: String\n\tdateFormat: String\n\tcreatedBy: String\n\tcreatedDate: String\n\tlastUpdatedBy: String\n\tlastUpdatedDate: String\n\tdefault: Boolean\n}\n\n\ntype Mutation {\n\trefreshProgressBar(\n\t\tsubmissionId: String!,\n\t\ttotalRecordCount: Int,\n\t\tloadedRecordCount: Int,\n\t\tvalidatedRecordCount: Int,\n\t\tactionRecordCount: Int\n\t): ProgressUpdate\n}\n\ntype ProgressUpdate {\n\tsubmissionId: String!\n\tprocessingState: String\n\tbusinessFailureCode: String\n\tbusinessFailureReason: String\n\ttotalRecordCount: Int\n\tloadedRecordCount: Int\n\tvalidatedRecordCount: Int\n\tactionRecordCount: Int\n}\n\ntype Query {\n\tgetFileMapDetails(fileMapId: Int): FileMap\n}\n\ntype Subscription {\n\trefreshProgressBar(submissionId: String!): ProgressUpdate\n\t\t@aws_subscribe(mutations: [\"refreshProgressBar\"])\n}\n\ntype ValueMap {\n\tinternalValue: String\n\texternalValue: String\n}",
+              "Definition": "type Schema {\n  query: Query\n  mutation: Mutation\n}\n\ntype FileMap {\n\tfileMapId: Int!\n\tname: String\n\tsubmissionType: String\n\tschemeId: String\n\tbillingGroupId: String\n\tactive: String\n\tdateFormat: String\n\tcreatedBy: String\n\tcreatedDate: String\n\tlastUpdatedBy: String\n\tlastUpdatedDate: String\n\tdefault: Boolean\n}\n\n\ntype Mutation {\n\tgetFileMapDetails(\n\t\tsubmissionId: String!,\n\t\ttotalRecordCount: Int,\n\t\tloadedRecordCount: Int,\n\t\tvalidatedRecordCount: Int,\n\t\tactionRecordCount: Int\n\t): ProgressUpdate\n}\n\ntype ProgressUpdate {\n\tsubmissionId: String!\n\tprocessingState: String\n\tbusinessFailureCode: String\n\tbusinessFailureReason: String\n\ttotalRecordCount: Int\n\tloadedRecordCount: Int\n\tvalidatedRecordCount: Int\n\tactionRecordCount: Int\n}\n\ntype Query {\n\tgetFileMapDetails(fileMapId: Int): FileMap\n}\n\ntype Subscription {\n\tgetFileMapDetails(submissionId: String!): ProgressUpdate\n\t\t@aws_subscribe(mutations: [\"refreshProgressBar\"])\n}\n\ntype ValueMap {\n\tinternalValue: String\n\texternalValue: String\n}",
               "ApiId": {
                 "Fn::GetAtt": [
                   "GraphQlApi",
@@ -207,7 +246,7 @@
               }
             }
           },
-          "GraphQlResolverMutationrefreshProgressBar": {
+          "GraphQlResolverMutationgetFileMapDetails": {
             "Type": "AWS::AppSync::Resolver",
             "DependsOn": "GraphQlSchema",
             "Properties": {
@@ -218,12 +257,12 @@
                 ]
               },
               "TypeName": "Mutation",
-              "FieldName": "refreshProgressBar",
-              "RequestMappingTemplate": "#**\n    Resolvers with None data sources can locally publish events\n    that fire subscriptions without hitting a backend data source.\n    The value of 'payload' after the template has been evaluated\n    will be directly forwarded to the response.\n*#\n{\n    \"version\": \"2017-02-28\",\n     \"payload\": $util.toJson($context.args)\n}",
+              "FieldName": "getFileMapDetails",
+              "RequestMappingTemplate": "#**\nThe value of 'payload' after the template has been evaluated\nwill be passed as the event to AWS Lambda.\n*#\n{\n  \"version\" : \"2017-02-28\",\n  \"operation\": \"Invoke\",\n  \"payload\": $util.toJson($context.args)\n}",
               "ResponseMappingTemplate": "$util.toJson($ctx.result)\n",
               "DataSourceName": {
                 "Fn::GetAtt": [
-                  "GraphQlDsrealtimedata",
+                  "GraphQlDsGETFILEMAP",
                   "Name"
                 ]
               }
@@ -285,6 +324,46 @@
                 ]
               }
             }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         "Outputs": {
@@ -336,7 +415,10 @@
         "logging": {
           "name": "sls-appsync-pjs-us-west-2-sandbox-Logging-AppSyncServiceRole",
           "arn": {
-            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GraphQlApi\"][\"Properties\"][\"LogConfig\"][\"CloudWatchLogsRoleArn\"]"
+            "Fn::GetAtt": [
+              "AppSyncLoggingServiceRole",
+              "Arn"
+            ]
           }
         }
       },
@@ -351,10 +433,10 @@
         },
         "mappingTemplates": [
           {
-            "dataSource": "realtimedata",
+            "dataSource": "GETFILEMAP",
             "type": "Mutation",
-            "field": "refreshProgressBar",
-            "request": "request/realtimedata/refreshProgressBar-item-request-mapping-template.vtl",
+            "field": "getFileMapDetails",
+            "request": "request/getFileMapDetails/getFileMapDetails-item-request-mapping-template.vtl",
             "response": "response/generic-response-mapping-template.vtl"
           },
           {
@@ -439,11 +521,40 @@
       },
       "Outputs": {}
     },
+    "configValidationMode": "warn",
     "serviceFilename": "serverless.yml",
-    "layers": {}
+    "layers": {},
+    "initialServerlessConfig": {
+      "service": {
+        "$ref": "$[\"service\"][\"serviceObject\"]"
+      },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "package": {
+        "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597414803186-2020-08-14T14:20:03.186Z"
+      },
+      "layers": {
+        "$ref": "$[\"service\"][\"layers\"]"
+      },
+      "configValidationMode": "warn"
+    },
+    "isDashboardMonitoringPreconfigured": false
   },
   "package": {
-    "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597396308035-2020-08-14T09:11:48.035Z",
+    "artifactDirectoryName": "serverless/sls-appsync-pjs/sandbox/1597414803186-2020-08-14T14:20:03.186Z",
     "artifact": ""
   }
 }

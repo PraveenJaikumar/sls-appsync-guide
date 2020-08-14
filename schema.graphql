@@ -20,7 +20,7 @@ type FileMap {
 
 
 type Mutation {
-	refreshProgressBar(
+	getFileMapDetails(
 		submissionId: String!,
 		totalRecordCount: Int,
 		loadedRecordCount: Int,
@@ -45,7 +45,7 @@ type Query {
 }
 
 type Subscription {
-	refreshProgressBar(submissionId: String!): ProgressUpdate
+	getFileMapDetails(submissionId: String!): ProgressUpdate
 		@aws_subscribe(mutations: ["refreshProgressBar"])
 }
 
