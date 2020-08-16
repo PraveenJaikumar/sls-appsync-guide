@@ -7,7 +7,11 @@ const AwsMetrics = require('./awsMetrics');
 const Serverless = require('../../../Serverless');
 const CLI = require('../../../classes/CLI');
 const chalk = require('chalk');
-const moment = require('moment');
+const dayjs = require('dayjs');
+
+const LocalizedFormat = require('dayjs/plugin/localizedFormat');
+
+dayjs.extend(LocalizedFormat);
 
 describe('AwsMetrics', () => {
   let awsMetrics;
@@ -42,12 +46,9 @@ describe('AwsMetrics', () => {
     });
 
     it('should run promise chain in order for "metrics:metrics" hook', () => {
-      const extendedValidateStub = sinon
-        .stub(awsMetrics, 'extendedValidate').resolves();
-      const getMetricsStub = sinon
-        .stub(awsMetrics, 'getMetrics').resolves();
-      const showMetricsStub = sinon
-        .stub(awsMetrics, 'showMetrics').resolves();
+      const extendedValidateStub = sinon.stub(awsMetrics, 'extendedValidate').resolves();
+      const getMetricsStub = sinon.stub(awsMetrics, 'getMetrics').resolves();
+      const showMetricsStub = sinon.stub(awsMetrics, 'showMetrics').resolves();
 
       return awsMetrics.hooks['metrics:metrics']().then(() => {
         expect(extendedValidateStub.calledOnce).to.equal(true);
@@ -70,8 +71,7 @@ describe('AwsMetrics', () => {
       };
       awsMetrics.serverless.service.service = 'my-service';
       awsMetrics.options.function = 'function1';
-      validateStub = sinon
-        .stub(awsMetrics, 'validate').resolves();
+      validateStub = sinon.stub(awsMetrics, 'validate').resolves();
     });
 
     afterEach(() => {
@@ -81,8 +81,7 @@ describe('AwsMetrics', () => {
     it('should call the shared validate() function', () =>
       awsMetrics.extendedValidate().then(() => {
         expect(validateStub.calledOnce).to.equal(true);
-      })
-    );
+      }));
 
     it('should set the startTime to yesterday as the default value if not provided', () => {
       awsMetrics.options.startTime = null;
@@ -96,7 +95,7 @@ describe('AwsMetrics', () => {
       const yesterdaysDate = `${yesterdaysYear}-${yesterdaysMonth}-${yesterdaysDay}`;
 
       return awsMetrics.extendedValidate().then(() => {
-        const defaultsStartTime = moment(awsMetrics.options.startTime);
+        const defaultsStartTime = dayjs(awsMetrics.options.startTime);
         const defaultsDate = defaultsStartTime.format('YYYY-M-D');
 
         expect(defaultsDate).to.equal(yesterdaysDate);
@@ -126,7 +125,7 @@ describe('AwsMetrics', () => {
       const yesterdaysDate = `${yesterdaysYear}-${yesterdaysMonth}-${yesterdaysDay}`;
 
       return awsMetrics.extendedValidate().then(() => {
-        const translatedStartTime = moment(awsMetrics.options.startTime);
+        const translatedStartTime = dayjs(awsMetrics.options.startTime);
         const translatedDate = translatedStartTime.format('YYYY-M-D');
 
         expect(translatedDate).to.equal(yesterdaysDate);
@@ -143,7 +142,7 @@ describe('AwsMetrics', () => {
       const todaysDate = `${todaysYear}-${todaysMonth}-${todaysDay}`;
 
       return awsMetrics.extendedValidate().then(() => {
-        const defaultsStartTime = moment(awsMetrics.options.endTime);
+        const defaultsStartTime = dayjs(awsMetrics.options.endTime);
         const defaultsDate = defaultsStartTime.format('YYYY-M-D');
 
         expect(defaultsDate).to.equal(todaysDate);
@@ -237,44 +236,52 @@ describe('AwsMetrics', () => {
 
       const expectedResult = [
         [
-          { ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func1' },
             Label: 'Invocations',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func1' },
             Label: 'Throttles',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func1' },
             Label: 'Errors',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func1' },
             Label: 'Duration',
             Datapoints: [],
           },
         ],
         [
-          { ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func2' },
+          {
+            ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func2' },
             Label: 'Invocations',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func2' },
+          {
+            ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func2' },
             Label: 'Throttles',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func2' },
+          {
+            ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func2' },
             Label: 'Errors',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func2' },
+          {
+            ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func2' },
             Label: 'Duration',
             Datapoints: [],
           },
         ],
       ];
 
-      return awsMetrics.getMetrics().then((result) => {
+      return awsMetrics.getMetrics().then(result => {
         expect(result).to.deep.equal(expectedResult);
       });
     });
@@ -311,26 +318,30 @@ describe('AwsMetrics', () => {
 
       const expectedResult = [
         [
-          { ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f50045b-b569-11e6-86c6-eb54d1aaa755-func1' },
             Label: 'Invocations',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f59059b-b569-11e6-aa18-c7bab68810d2-func1' },
             Label: 'Throttles',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f50c7b1-b569-11e6-b1b6-ab86694b617b-func1' },
             Label: 'Errors',
             Datapoints: [],
           },
-          { ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func1' },
+          {
+            ResponseMetadata: { RequestId: '1f63db14-b569-11e6-8501-d98a275ce164-func1' },
             Label: 'Duration',
             Datapoints: [],
           },
         ],
       ];
 
-      return awsMetrics.getMetrics().then((result) => {
+      return awsMetrics.getMetrics().then(result => {
         expect(result).to.deep.equal(expectedResult);
       });
     });
@@ -340,11 +351,13 @@ describe('AwsMetrics', () => {
       awsMetrics.options.endTime = new Date('1970-01-01T16:00');
 
       return awsMetrics.getMetrics().then(() => {
-        expect(requestStub.calledWith(
-          sinon.match.string,
-          sinon.match.string,
-          sinon.match.has('Period', 3600)
-        )).to.equal(true);
+        expect(
+          requestStub.calledWith(
+            sinon.match.string,
+            sinon.match.string,
+            sinon.match.has('Period', 3600)
+          )
+        ).to.equal(true);
       });
     });
 
@@ -353,11 +366,13 @@ describe('AwsMetrics', () => {
       awsMetrics.options.endTime = new Date('1970-01-03');
 
       return awsMetrics.getMetrics().then(() => {
-        expect(requestStub.calledWith(
-          sinon.match.string,
-          sinon.match.string,
-          sinon.match.has('Period', 24 * 3600)
-        )).to.equal(true);
+        expect(
+          requestStub.calledWith(
+            sinon.match.string,
+            sinon.match.string,
+            sinon.match.has('Period', 24 * 3600)
+          )
+        ).to.equal(true);
       });
     });
   });
@@ -455,7 +470,7 @@ describe('AwsMetrics', () => {
       expectedMessage += `${chalk.yellow('Errors: 0 \n')}`;
       expectedMessage += `${chalk.yellow('Duration (avg.): 1000ms')}`;
 
-      return awsMetrics.showMetrics(metrics).then((message) => {
+      return awsMetrics.showMetrics(metrics).then(message => {
         expect(consoleLogStub.calledOnce).to.equal(true);
         expect(message).to.equal(expectedMessage);
       });
@@ -477,18 +492,15 @@ describe('AwsMetrics', () => {
         ],
       ];
 
-      return awsMetrics.showMetrics(metrics).then((message) => {
+      return awsMetrics.showMetrics(metrics).then(message => {
         expect(message).to.include('Duration (avg.): 300ms');
       });
     });
 
     it('should display 0 as average function duration if no data by given period', () => {
-      const metrics = [
-        [],
-        [],
-      ];
+      const metrics = [[], []];
 
-      return awsMetrics.showMetrics(metrics).then((message) => {
+      return awsMetrics.showMetrics(metrics).then(message => {
         expect(message).to.include('Duration (avg.): 0ms');
       });
     });
@@ -537,7 +549,7 @@ describe('AwsMetrics', () => {
       expectedMessage += `${chalk.yellow('Errors: 0 \n')}`;
       expectedMessage += `${chalk.yellow('Duration (avg.): 1000ms')}`;
 
-      return awsMetrics.showMetrics(metrics).then((message) => {
+      return awsMetrics.showMetrics(metrics).then(message => {
         expect(consoleLogStub.calledOnce).to.equal(true);
         expect(message).to.equal(expectedMessage);
       });
@@ -551,7 +563,7 @@ describe('AwsMetrics', () => {
       expectedMessage += 'January 1, 1970 12:00 AM - January 2, 1970 12:00 AM\n\n';
       expectedMessage += `${chalk.yellow('There are no metrics to show for these options')}`;
 
-      return awsMetrics.showMetrics().then((message) => {
+      return awsMetrics.showMetrics().then(message => {
         expect(consoleLogStub.calledOnce).to.equal(true);
         expect(message).to.equal(expectedMessage);
       });

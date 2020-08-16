@@ -20,7 +20,7 @@ echo "**** Deploying to $stage ****"
 SLS_DEBUG=*
 
 # Deploy additionalstacks first
-sls deploy additionalstacks --stage $stage --region $region -v
+./node_modules/.bin/serverless deploy additionalstacks --stage $stage --region $region -v
 
 # Deploy main stack last
-sls deploy --stage $stage --region $region -v
+./node_modules/.bin/serverless deploy --stage $stage --region $region -v

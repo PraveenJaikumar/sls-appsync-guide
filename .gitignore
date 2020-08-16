@@ -1,0 +1,9 @@
+# package directories
+node_modules
+jspm_packages
+target
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
